@@ -1,7 +1,6 @@
 [BITS   16]
-[ORG    0x7C00]
 
-main:
+kmain:
     mov ax, hw
     call print_string
     call other_entry
@@ -32,7 +31,3 @@ print_string_done:
 hw: db 'Hello, world',0
 
 %include "other.s"
-
-times 510-($-$$) db 0
-db 0x55
-db 0xaa

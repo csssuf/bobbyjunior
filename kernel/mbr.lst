@@ -1,0 +1,58 @@
+     1                                  [BITS   16]
+     2                                  [ORG    0x7C00]
+     3                                  
+     4                                  boot:
+     5 00000000 B80000                      mov ax, 0
+     6 00000003 8ED8                        mov ds, ax
+     7 00000005 8EC0                        mov es, ax
+     8 00000007 8ED0                        mov ss, ax
+     9 00000009 BC007C                      mov sp, 0x7C00 ; stack lives at 0x1500, grows towards 0x500
+    10 0000000C E9F101                      jmp kmain
+    11                                  
+    12 0000000F 00<rept>                times 510-($-$$) db 0
+    13 000001FE 55                      db 0x55
+    14 000001FF AA                      db 0xaa
+    15                                  
+    16                                  %include "main.s"
+    17                              <1> [BITS   16]
+    18                              <1> 
+    19                              <1> kmain:
+    20 00000200 B8[2802]            <1>     mov ax, hw
+    21 00000203 E81000              <1>     call print_string
+    22 00000206 E82C00              <1>     call other_entry
+    23 00000209 EBFE                <1>     jmp $
+    24                              <1> 
+    25                              <1> print_char:
+    26 0000020B 53                  <1>     push bx
+    27 0000020C B40E                <1>     mov ah, 0x0e
+    28 0000020E B307                <1>     mov bl, 0x07
+    29 00000210 B700                <1>     mov bh, 0x00
+    30 00000212 CD10                <1>     int 0x10
+    31 00000214 5B                  <1>     pop bx
+    32 00000215 C3                  <1>     ret
+    33                              <1> 
+    34                              <1> print_string:
+    35 00000216 89C3                <1>     mov bx, ax
+    36 00000218 B500                <1>     mov ch, 0
+    37                              <1> print_string_loop:
+    38 0000021A 8A07                <1>     mov byte al, [bx]
+    39 0000021C 88C1                <1>     mov cl, al
+    40 0000021E E307                <1>     jcxz print_string_done
+    41 00000220 E8E8FF              <1>     call print_char
+    42 00000223 FEC3                <1>     inc bl
+    43 00000225 EBF3                <1>     jmp print_string_loop
+    44                              <1> print_string_done:
+    45 00000227 C3                  <1>     ret
+    46                              <1> 
+    47 00000228 48656C6C6F2C20776F- <1> hw: db 'Hello, world',0
+    48 00000231 726C6400            <1>
+    49                              <1> 
+    50                              <1> %include "other.s"
+    51                              <2> other_entry:
+    52 00000235 B8[3C02]            <2>     mov ax, hw2
+    53 00000238 E8DBFF              <2>     call print_string
+    54 0000023B C3                  <2>     ret
+    55                              <2> 
+    56 0000023C 0A0D54686973206973- <2> hw2: db 0xA,0xD,'This is also a string',0
+    57 00000245 20616C736F20612073- <2>
+    58 0000024E 7472696E6700        <2>

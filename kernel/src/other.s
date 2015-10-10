@@ -3,4 +3,4 @@ other_entry:
     call print_string
     ret
 
-hw2: db 0xA,'This is also a string',0
+hw2: db 0xA,0xD,'This is also a string',0
