@@ -1,0 +1,36 @@
+     1                                  [BITS   16]
+     2                                  [ORG    0x7C00]
+     3                                  
+     4                                  main:
+     5 00000000 B8[2500]                    mov ax, hw
+     6 00000003 E80D00                      call print_string
+     7 00000006 EBFE                        jmp $
+     8                                  
+     9                                  print_char:
+    10 00000008 53                          push bx
+    11 00000009 B40E                        mov ah, 0x0e
+    12 0000000B B307                        mov bl, 0x07
+    13 0000000D B700                        mov bh, 0x00
+    14 0000000F CD10                        int 0x10
+    15 00000011 5B                          pop bx
+    16 00000012 C3                          ret
+    17                                  
+    18                                  print_string:
+    19 00000013 89C3                        mov bx, ax
+    20 00000015 B500                        mov ch, 0
+    21                                  print_string_loop:
+    22 00000017 8A07                        mov byte al, [bx]
+    23 00000019 88C1                        mov cl, al
+    24 0000001B E307                        jcxz print_string_done
+    25 0000001D E8E8FF                      call print_char
+    26 00000020 FEC3                        inc bl
+    27 00000022 EBF3                        jmp print_string_loop
+    28                                  print_string_done:
+    29 00000024 C3                          ret
+    30                                  
+    31 00000025 48656C6C6F2C20776F-     hw: db 'Hello, world',0
+    32 0000002E 726C6400           
+    33                                  
+    34 00000032 00<rept>                times 510-($-$$) db 0
+    35 000001FE 55                      db 0x55
+    36 000001FF AA                      db 0xaa
