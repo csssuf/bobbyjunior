@@ -41,7 +41,7 @@ _print_string_loop:
     call print_char
     add sp, 2
 
-    inc bl
+    inc bx
     jmp _print_string_loop
 
 _print_string_done:
