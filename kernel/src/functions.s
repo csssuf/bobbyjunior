@@ -2,7 +2,7 @@
 ; Arguments: (top of stack first)
 ; - Character to print
 print_char:
-    move ax, bx ; save bx to ax
+    mov ax, bx ; save bx to ax
     pop bx
     push ax ; push ax to stack
     mov ah, 0x0e
