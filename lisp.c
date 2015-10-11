@@ -1,3 +1,5 @@
+#define NULL ((void*)0)
+
 extern int getchar();
 
 typedef void * val;
@@ -11,6 +13,7 @@ struct cons conses[512];
 panic(s)
 char *s;
 {
+	putstr("FATAL: ");
 	putstr(s);
 	halt();
 }
@@ -23,10 +26,10 @@ val symb_print;
 
 int
 strlen(c)
-char c;
+char *c;
 {
 	int len = 0;
-	while(*c++ != '\0') len++;
+	while(*(c++) != '\0') len++;
 	return len;
 }
 
@@ -68,18 +71,52 @@ struct tblent {
 	val key, val;
 };
 
-struct tblent binds[128];
+struct tblent binds[256];
 int nbinds = 0;
+
+bind(name, vl)
+val name;
+val vl;
+{
+	if (nbinds == sizeof(binds)/sizeof(binds[0])) {
+		panic("Too many bindings");
+	}
+	binds[nbinds].key = name;
+	binds[nbinds].val = vl;
+	nbinds++;
+}
+
+typedef void (*builtin)(nargs, args);
+
+builtin builtins[32];
+int nbuiltins = 0;
 
 struct cons *
 ascons(v)
 val v;
 {
-	if (term > (void*) conses &&
-	    term < (void*) conses + sizeof(conses)) {
+	if (v > (char*) &conses &&
+	    v < (char*) &conses + sizeof(conses)) {
 		return (struct cons *)v;
 	}
 	panic("ascons: bad cell");
+}
+
+val eval();
+
+builtin_apply(fn, args)
+builtin fn;
+struct cons *args;
+{
+	val *bargs = calloc(8*sizeof(val));
+	int nargs;
+
+	while (args != NULL) {
+		bargs[nargs++] = eval(args->car);
+		args = ascons(args->cdr);
+	}
+
+	fn(bargs, nargs);
 }
 
 val
@@ -90,25 +127,52 @@ val term;
 	// integers are all less than 512, obviously
 	if (term < 512) {
 		return term;
-	} else if (term > (void*) symbs &&
-	           term < (void*) symbs + sizeof(symbs)) {
+	} else if (term > (char*) symbs &&
+	           term < (char*) symbs + sizeof(symbs)) {
 	        int i;
 	        for (i = 0; i < nbinds; ++i) {
-		        if (val == binds[i].key) {
+		        if (term == binds[i].key) {
 			        return binds[i].val;
 		        }
 	        }
 	        panic("Unbound variable");
-	} else if (term > (void*) conses &&
-	           term < (void*) conses + sizeof(conses)) {
-		term1 = (struct cons *) term;
+	} else if (term > (char*) conses &&
+	           term < (char*) conses + sizeof(conses)) {
+		val fn;
 
-		if (term1.car == symb_print) {
-			
+		term1 = (struct cons *) term;
+		fn = eval(term1->car);
+
+		if (fn > &builtins &&
+		    fn < &builtins + sizeof(builtins)) {
+			builtin_apply(fn, ascons(term1->cdr));
+		}
 	}
+}
+
+lisp_print(nargs, args)
+val *args;
+{
+	if (nargs != 1) {
+		panic("Bad args to print");
+	}
+	putstr(args[0]);
+}
+
+val
+make_builtin(name, blt)
+char *name;
+builtin blt;
+{
+	if (nbuiltins == sizeof(builtins)/sizeof(builtins[0])) {
+		panic("Too many builtins");
+	}
+	builtins[nbuiltins] = blt;
+
+	bind(intern(name), &builtins[nbuiltins++]);
 }
 
 lisp_init()
 {
-	symb_print = intern("print");
+	make_builtin("print", lisp_print);
 }
