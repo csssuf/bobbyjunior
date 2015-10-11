@@ -1,4 +1,5 @@
 %include "functions.s"
+%include "memory.s"
 
 kmain:
     mov ax, hw
