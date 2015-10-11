@@ -1,13 +1,18 @@
 ; memset(addr, char, len)
 memset:
-    pop ax ; move int16 addr from stack to reg
-    pop cx ; move int16 char from stack to reg
-    pop dl ; move int8 len from stack to reg
-    mov dh, 0 ; counter
-    .memset_loop
-        add ax, dh
-        mov dword [ax], cl
-        add dh, 1
-        cmp dh, dl
-        jne .memset_loop
+    pop dx; move len from stack to reg, use DX
+    pop cx ; move char from stack to reg, use CX
+    pop ax ; move addr from stack to reg, use AX
+
+    push bx ; dafuck? you can only do indirect addressing with bx
+    mov bx, ax ; see ab
+
+    sub dx, 1 ; 0 indexed
+    .memset_loop:
+        add bx, dx
+        mov word [bx], cx
+        sub dx, 1
+        clc
+        cmp dx, 0
+        jl .memset_loop
     ret
