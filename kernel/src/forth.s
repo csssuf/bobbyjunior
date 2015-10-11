@@ -1,4 +1,4 @@
-        ; forth regs
+BITS 16 ; forth regs
         ; ax: top of stack
         ; 
         ; cx: dstack pointer
@@ -50,19 +50,34 @@ readloop:
         call nextchar
         jmp readloop
 readloop_done:
+        mov [thisword + bx], byte 0
         mov [thisword], ax
         pop bx
         pop ax
         ret
 
 forth_eval:
-        push dx
         push ax
-        mov ax, 0
-        mov bx, bindings+6
+        push bx
+        push cx
+        push dx
+        mov ax, thisword
+        mov bx, bindings
 lookup: ; ax: string index, bx: bindings index, dx: bindings addr
+        mov cx, [bx]
+        xchg ax, bx
         mov dx, [bx]
-        cmp [thisword+bx], dx
+        xchg ax, bx
+        
+        cmp cx, dx
+        jne nomatch
+        cmp cx, 0
+        mov ax, 1
+        je lookup_done
+
+lookup_done:    
+        mov ax, 1
+
 
 nextchar:
         push ax
@@ -84,7 +99,7 @@ forth_print:
         push cx
         push dx
         push ax
-        call print_hex
+        call print_hex_number
         pop dx
         pop cx
         pop ax
