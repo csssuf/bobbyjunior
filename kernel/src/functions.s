@@ -2,14 +2,21 @@
 ; Arguments: (top of stack first)
 ; - Character to print
 print_char:
-    mov ax, bx ; save bx to ax
-    pop bx
-    push ax ; push ax to stack
+    push bp         ; save callers bp
+    mov bp, sp      ; mv sp into bp
+    sub sp, 4       ; make room for local vars
+
+    mov ax, word [bp+4]  ; move first arg into ax
+    mov word [bp-2], bx  ; store bx in a local stack var
+
     mov ah, 0x0e
     mov bl, 0x07
     mov bh, 0x00
     int 0x10
-    pop bx ; restore bx
+
+    mov bx, word [bp-2]
+    mov sp, bp
+    pop bp
     ret
 
 ; Prints a null-terminated string.
