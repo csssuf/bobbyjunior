@@ -1,3 +1,4 @@
+; Set memory to a specified char
 ; memset(int16 addr, char, len)
 memset:
     ; setup out stack frame
@@ -27,6 +28,7 @@ memset:
     pop bp
     ret
 
+; Copy one location in memory to another
 ; memcpy(int16 src, int16 dest, int16 len)
 memcpy:
     push bp
@@ -58,8 +60,6 @@ memcpy:
     mov sp, bp
     pop bp
     ret
-
-
 
     pop bx
     sub sp, 4
