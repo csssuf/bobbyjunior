@@ -42,14 +42,14 @@ print_line:
     call print_char
     ret
 
-; NOTE: pusha and popa do not save/restore bx, since it is a callee saved register.
-pusha:
+; NOTE: _pusha and _popa do not save/restore bx, since it is a callee saved register.
+_pusha:
     push ax
     push cx
     push dx
     ret
 
-popa:
+_popa:
     pop dx
     pop cx
     pop ax
