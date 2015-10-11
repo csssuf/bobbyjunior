@@ -1,4 +1,4 @@
-BITS 16 ; forth regs
+cpu 8086 ; forth regs
         ; ax: top of stack
         ; 
         ; cx: dstack pointer
@@ -61,23 +61,39 @@ forth_eval:
         push bx
         push cx
         push dx
+
+        mov bx, 0
+
+lookup: mov ax, 6
+        push ax
+        lea ax, [bindings+bx]
+        push ax
         mov ax, thisword
-        mov bx, bindings
-lookup: ; ax: string index, bx: bindings index, dx: bindings addr
-        mov cx, [bx]
-        xchg ax, bx
-        mov dx, [bx]
-        xchg ax, bx
+        push ax
         
-        cmp cx, dx
-        jne nomatch
-        cmp cx, 0
-        mov ax, 1
-        je lookup_done
+        call strncmp
+        cmp ax, 0
+        je lookup_found
 
-lookup_done:    
-        mov ax, 1
+        add bx, 8
+        push bx
+        add bx, bindings
+        cmp bx, endbindings
+        je lookup_notfound
+        pop bx
+        jmp lookup
 
+lookup_notfound:
+        mov ax, loop_failmsg
+        jmp panic
+
+lookup_found:
+        mov bx, [bx+6]
+        
+
+
+loop_failmsg:
+        db 'No such word', 0
 
 nextchar:
         push ax
@@ -104,4 +120,8 @@ forth_print:
         pop cx
         pop ax
 
+panic:
+        push ax
+        call putstr
+halt:   jmp halt
         
