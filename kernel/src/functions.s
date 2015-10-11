@@ -27,3 +27,17 @@ print_line:
     mov al, 0xA
     call print_char
     ret
+
+pusha:
+    push ax
+    push bx
+    push cx
+    push dx
+    ret
+
+popa:
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
