@@ -90,3 +90,19 @@ _popa:
     pop cx
     pop ax
     ret
+
+
+get_char:
+    push bp         ; save callers bp
+    mov bp, sp      ; mv sp into bp
+    sub sp, 2       ; make room for local vars
+
+    mov word [bp-2], bx  ; store bx in a local stack var
+
+    mov ah, 0x00
+    int 0x16        ; ah = scan code, al = char [This blocks]
+
+    mov bx, word [bp-2]
+    mov sp, bp
+    pop bp
+    ret
