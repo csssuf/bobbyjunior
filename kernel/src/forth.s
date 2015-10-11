@@ -122,6 +122,6 @@ forth_print:
 
 panic:
         push ax
-        call putstr
+        call print_string
 halt:   jmp halt
         
