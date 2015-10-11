@@ -2,9 +2,10 @@
 %include "memory.s"
 
 kmain:
-    mov cl, '!'
-    push cx
-    call print_char
+    mov dx, hw
+    push dx
+    call print_line
+    add sp, 2
     jmp $
 
 hw: db 'Kernel loaded.',0
