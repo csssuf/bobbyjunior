@@ -19,7 +19,7 @@ read_drive:
     mov bx, 0
 
     mov ah, 2 ; load to ES:BX
-    mov al, 1 ; load 1 sector
+    mov al, 2 ; load 1 sector
     mov ch, 0 ; cylinder 0
     mov cl, 2 ; sector 2
     mov dh, 0 ; head 0
