@@ -58,43 +58,88 @@ readloop_done:
 
 forth_eval:
         push ax
-        push bx
         push cx
         push dx
 
-        mov bx, 0
+        mov ax, byte [thisword]
+        test ax, '0'
+        jne .lookup
 
-lookup: mov ax, 6
-        push ax
-        lea ax, [bindings+bx]
-        push ax
-        mov ax, thisword
-        push ax
-        
-        call strncmp
-        cmp ax, 0
-        je lookup_found
+        ; parse hex
+        mov bx, thisword+2
+        mov cx, 0
+        mov dx, 0
+        .parse_hex:
+                mov ax, byte [bx]
+                cmp ax, '0'
+                blt .bad_num
+                cmp ax, '9'
+                bgt .athruf
 
-        add bx, 8
-        push bx
-        add bx, bindings
-        cmp bx, endbindings
-        je lookup_notfound
-        pop bx
-        jmp lookup
+                sub ax, '0'
 
-lookup_notfound:
-        mov ax, loop_failmsg
-        jmp panic
+                jmp .parse_hex
 
-lookup_found:
+        .athruf:
+	        cmp ax, 'A'
+	        blt .bad_num
+	        cmp ax, 'F'
+	        bgt .bad_num
+	        sub ax, 'A'
+        .parse_next:
+                sal cx, 4
+                add cx, bx
+                add bx, 1
+                cmp bx, thisword+6
+                jeq push_num
+
+        .push_num:
+	        mov bx, cx
+	        
+	        pop dx
+	        pop cx
+	        pop ax
+
+	        mov [cx], ax
+	        add cx, 2
+	        mov ax, bx
+
+	        ret
+
+        .lookup:
+        	mov ax, 6
+	        push ax
+	        lea ax, [bindings+bx]
+	        push ax
+	        mov ax, thisword
+	        push ax
+
+	        call strncmp
+	        cmp ax, 0
+	        je .found
+
+	        add bx, 8
+	        push bx
+	        add bx, bindings
+	        cmp bx, endbindings
+	        je .notfound
+	        pop bx
+	        jmp lookup
+
+        .notfound:
+                mov ax, .failmsg
+                jmp panic
+
+        .failmsg:
+                db 'No such word', 0
+
+        .found:
+                
         mov bx, [bx+6]
+                
         
 
-
-loop_failmsg:
-        db 'No such word', 0
-
+        
 nextchar:
         push ax
         push cx
