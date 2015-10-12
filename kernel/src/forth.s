@@ -72,9 +72,9 @@ forth_eval:
         .parse_hex:
                 mov ax, byte [bx]
                 cmp ax, '0'
-                blt .bad_num
+                jlt .bad_num
                 cmp ax, '9'
-                bgt .athruf
+                jgt .athruf
 
                 sub ax, '0'
 
@@ -82,9 +82,9 @@ forth_eval:
 
         .athruf:
 	        cmp ax, 'A'
-	        blt .bad_num
+	        jlt .bad_num
 	        cmp ax, 'F'
-	        bgt .bad_num
+	        jgt .bad_num
 	        sub ax, 'A'
         .parse_next:
                 sal cx, 4
