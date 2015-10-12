@@ -61,8 +61,8 @@ forth_eval:
         push cx
         push dx
 
-        mov ax, byte [thisword]
-        test ax, '0'
+        mov al, byte [thisword]
+        test al, '0'
         jne .lookup
 
         ; parse hex
@@ -70,37 +70,44 @@ forth_eval:
         mov cx, 0
         mov dx, 0
         .parse_hex:
-                mov ax, byte [bx]
-                cmp ax, '0'
-                jlt .bad_num
-                cmp ax, '9'
-                jgt .athruf
+                mov al, byte [bx]
+                cmp al, '0'
+                jl .bad_num
+                cmp al, '9'
+                jg .athruf
 
-                sub ax, '0'
+                sub al, '0'
 
                 jmp .parse_hex
 
         .athruf:
-	        cmp ax, 'A'
-	        jlt .bad_num
-	        cmp ax, 'F'
-	        jgt .bad_num
-	        sub ax, 'A'
+	        cmp al, 'A'
+	        jl .bad_num
+	        cmp al, 'F'
+	        jg .bad_num
+	        sub al, 'A'
         .parse_next:
-                sal cx, 4
-                add cx, bx
+                mov ah, 0
+                mov cl, 4
+
+                sar dx, cl
+                add dx, ax
+
                 add bx, 1
                 cmp bx, thisword+6
-                jeq push_num
+                je .push_num
 
         .push_num:
-	        mov bx, cx
+	        mov bx, dx
 	        
 	        pop dx
 	        pop cx
 	        pop ax
+                
+                xchg cx, bx
+	        mov [bx], ax
+                xchg cx, bx
 
-	        mov [cx], ax
 	        add cx, 2
 	        mov ax, bx
 
@@ -124,7 +131,7 @@ forth_eval:
 	        cmp bx, endbindings
 	        je .notfound
 	        pop bx
-	        jmp lookup
+	        jmp .lookup
 
         .notfound:
                 mov ax, .failmsg
@@ -132,6 +139,13 @@ forth_eval:
 
         .failmsg:
                 db 'No such word', 0
+
+        .bad_num:
+                mov ax, .badnummsg
+                jmp panic
+
+        .badnummsg:
+                db 'Bad number', 0
 
         .found:
                 
