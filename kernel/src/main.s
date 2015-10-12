@@ -1,5 +1,6 @@
 %include "functions.s"
 %include "memory.s"
+%include "strings.s"
 ;%include "forth.s"
 
 kmain:
@@ -37,6 +38,27 @@ kmain:
 
     add sp, 2
 
+    mov dx, 12
+    push dx
+    mov dx, logo1
+    push dx
+    mov dx, logo2
+    push dx
+    call strncmp
+    cmp ax, 0
+    je .success
+    jmp .failure
+
+    .success:
+        mov dx, succ
+        push dx
+        call print_line
+        jmp $
+    .failure:
+        mov dx, fail
+        push dx
+        call print_line
+        jmp $
     ;jmp forth_main
     jmp $
 
@@ -50,4 +72,5 @@ logo6: db '=     = =  =',0
 logo7: db '= =====    =',0
 logo8: db '=       =  =',0
 logo9: db '=========  =',0
-
+succ: db 'Success!',0
+fail: db 'Failure!',0
