@@ -30,18 +30,16 @@ print_string:
     mov word [bp - 2], bx
     mov bx, word [bp + 4]
     
-    mov ch, 0
-
 _print_string_loop:
     mov byte al, [bx]
-    mov cl, al
-    jcxz _print_string_done
+    cmp al, 0
+    je _print_string_done
 
     push ax
     call print_char
     add sp, 2
 
-    inc bl
+    inc bx
     jmp _print_string_loop
 
 _print_string_done:
