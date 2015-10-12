@@ -1,7 +1,6 @@
 %include "functions.s"
-%include "memory.s"
-%include "strings.s"
-;%include "forth.s"
+%include "string.s"
+%include "forth.s"
 
 kmain:
     mov dx, hw
@@ -38,11 +37,12 @@ kmain:
 
     add sp, 2
 
+    ; Test strncmp
     mov dx, 12
     push dx
     mov dx, logo1
     push dx
-    mov dx, logo2
+    mov dx, logo9
     push dx
     call strncmp
     cmp ax, 0
@@ -53,14 +53,15 @@ kmain:
         mov dx, succ
         push dx
         call print_line
-        jmp $
+        jmp .forth_entry
     .failure:
         mov dx, fail
         push dx
         call print_line
+        jmp .forth_entry
+    .forth_entry:
+        jmp forth_main
         jmp $
-    ;jmp forth_main
-    jmp $
 
 hw: db 'Kernel loaded.',0
 logo1: db '=========  =',0
