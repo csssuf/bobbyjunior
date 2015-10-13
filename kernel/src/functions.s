@@ -116,20 +116,6 @@ _print_hex_number_loop:
     pop bp
     ret
 
-; NOTE: _pusha and _popa do not save/restore bx, since it is a callee saved register.
-_pusha:
-    push ax
-    push cx
-    push dx
-    ret
-
-_popa:
-    pop dx
-    pop cx
-    pop ax
-    ret
-
-
 get_char:
     push bp         ; save callers bp
     mov bp, sp      ; mv sp into bp
