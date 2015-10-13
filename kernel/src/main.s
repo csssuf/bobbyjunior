@@ -1,4 +1,3 @@
-%include "functions.s"
 %include "string.s"
 %include "forth.s"
 
