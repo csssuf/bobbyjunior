@@ -52,22 +52,20 @@ memset:
     mov bp, sp
     sub sp, 4
 
+    mov word [bp-2], bx ; save bx into a local var
     ; grab out args
-    mov ax, [bp + 4]    ; address
+    mov bx, [bp + 4]    ; address
     mov cx, [bp + 6]    ; CL = character
     mov dx, [bp + 8]    ; len
+    mov ax, 0           ; n (the counter)
 
-    mov word [bp-2], bx ; save bx into a local var
-    mov bx, ax          ; our address needs to be in bx
-
-    sub dx, 1           ; memory is 0 indexed
     .memset_loop:
-        add bx, dx
-        mov byte [bx], cl
-        sub dx, 1
-        clc
-        cmp dx, 0
-        jge .memset_loop
+        mov [bp-4], ax
+        add bx, [bp-4]
+        mov byte [bp-4], cl
+        inc ax
+        cmp ax, dx
+        jne .memset_loop
 
     mov bx, word [bp-2]
     mov sp, bp

@@ -29,6 +29,20 @@ bf_prompt:
     pop bp
     ret
 
+bf_dump_line:
+    push bp
+    mov bp, sp
+    sub sp, 2
+    mov [bp - 2], bx
+
+    mov dx, bf_line
+    call print_line
+
+    mov bx, [bp - 2]
+    mov sp, bp
+    pop bp
+    ret
+
 bf_print_pointer:
     push bp
     mov bp, sp
@@ -52,8 +66,7 @@ bf_pointer_inc:
     sub sp, 2
     mov [bp - 2], bx
 
-    mov bx, bf_pointer  ; bx = bf_pointer
-    inc word [bx]            ; &bf_pointer++
+    inc word [bf_pointer]            ; &bf_pointer++
 
     mov bx, [bp - 2]
     mov sp, bp
@@ -67,8 +80,7 @@ bf_pointer_dec:
     sub sp, 2
     mov [bp - 2], bx
 
-    mov bx, bf_pointer  ; bx = bf_pointer
-    dec word [bx]            ; &bf_pointer--
+    dec word [bf_pointer]            ; &bf_pointer--
 
     mov bx, [bp - 2]
     mov sp, bp
@@ -205,6 +217,8 @@ bf_eval:
 
     ; reset bf_line_pointer to 0
     mov word [bf_line_pointer], 0
+    xor bx, bx
+    xor dx, dx
 
     .loop:
         mov bx, word [bf_line_pointer]
@@ -223,9 +237,14 @@ bf_eval:
         je .eval_inbp
         cmp dl, '?'
         je .eval_pp
+        cmp dl, '#'
+        je .eval_dl
         cmp dl, 0
         je .bf_eval_end
         jmp .panic
+        .eval_dl:    ; dump line
+            call bf_dump_line
+            jmp .loop_end
         .eval_ip:   ; inc pointer
             call bf_pointer_inc
             jmp .loop_end
@@ -251,20 +270,30 @@ bf_eval:
             mov dx, bf_panic_intro
             push dx
             call print_string
+
             mov bx, [bf_line_pointer]
             mov dx, [bf_line + bx]
             push dx
             call print_char
+
             mov dx, bf_panic_mid
             push dx
             call print_string
+
             mov dx, [bf_line_pointer]
             add dx, 48
             push dx
             call print_char
-            mov dx, '\n'
-            push dx
-            call print_line
+
+            mov ax, 0xD
+            push ax
+            call print_char
+            add sp, 2
+
+            mov ax, 0xA
+            push ax
+            call print_char
+
             jmp .bf_eval_end
         .loop_end:
             inc word [bf_line_pointer]
