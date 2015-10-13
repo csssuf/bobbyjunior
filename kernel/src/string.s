@@ -54,7 +54,7 @@ memset:
 
     ; grab out args
     mov ax, [bp + 4]    ; address
-    mov cx, [bp + 6]    ; character
+    mov cx, [bp + 6]    ; CL = character
     mov dx, [bp + 8]    ; len
 
     mov word [bp-2], bx ; save bx into a local var
@@ -63,7 +63,7 @@ memset:
     sub dx, 1           ; memory is 0 indexed
     .memset_loop:
         add bx, dx
-        mov word [bx], cx
+        mov byte [bx], cl
         sub dx, 1
         clc
         cmp dx, 0
