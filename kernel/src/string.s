@@ -51,8 +51,8 @@ memset:
     push bp
     mov bp, sp
     sub sp, 4
-
     mov word [bp-2], bx ; save bx into a local var
+
     ; grab out args
     mov bx, [bp + 4]    ; address
     mov cx, [bp + 6]    ; CL = character
@@ -60,9 +60,9 @@ memset:
     mov ax, 0           ; n (the counter)
 
     .memset_loop:
-        mov [bp-4], ax
-        add bx, [bp-4]
-        mov byte [bp-4], cl
+        mov bx, [bp+4]
+        add bx, ax
+        mov byte [bp-4], cl ; mem[n] = char
         inc ax
         cmp ax, dx
         jne .memset_loop
