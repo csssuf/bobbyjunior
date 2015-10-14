@@ -62,7 +62,7 @@ memset:
     .memset_loop:
         mov bx, [bp+4]
         add bx, ax
-        mov byte [bp-4], cl ; mem[n] = char
+        mov byte [bx], cl ; mem[n] = char
         inc ax
         cmp ax, dx
         jne .memset_loop
