@@ -1,5 +1,4 @@
 [BITS   16]
-[ORG    0x7C00]
 
 boot:
     mov ax, cs ; initialize segment registers
@@ -19,7 +18,7 @@ read_drive:
     mov bx, 0
 
     mov ah, 2 ; load to ES:BX
-    mov al, 8 ; load 1 sector
+    mov al, 8 ; load 8 sectors
     mov ch, 0 ; cylinder 0
     mov cl, 2 ; sector 2
     mov dh, 0 ; head 0
