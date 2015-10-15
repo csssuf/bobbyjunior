@@ -1,3 +1,12 @@
+    [BITS 16]
+        
+    extern print_line
+    extern print_string
+    extern print_char
+    extern get_char
+    extern memset
+
+global bf_main
 bf_main:
     push bp
     mov bp, sp
