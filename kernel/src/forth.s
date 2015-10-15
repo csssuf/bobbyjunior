@@ -1,4 +1,9 @@
-cpu 8086 ; forth regs
+    [BITS 16]
+    extern strncmp
+    extern get_char
+    extern print_hex_number
+    extern print_string
+        ; forth regs
         ; ax: top of stack
         ; 
         ; cx: dstack pointer

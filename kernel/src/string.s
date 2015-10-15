@@ -1,5 +1,7 @@
+    [BITS 16]
 ; compare two strings up to len
 ; strncmp(addr str1, addr str2, len)
+global strncmp
 strncmp:
     push bp
     mov bp, sp
@@ -46,6 +48,7 @@ strncmp:
 
 ; Set memory to a specified char
 ; memset(int16 addr, char, len)
+global memset
 memset:
     ; setup out stack frame
     push bp
@@ -74,6 +77,7 @@ memset:
 
 ; Copy one location in memory to another
 ; memcpy(int16 src, int16 dest, int16 len)
+global memcpy
 memcpy:
     push bp
     sub sp, 4
@@ -111,6 +115,7 @@ memcpy:
 ; Prints a single character.
 ; Arguments: (top of stack first)
 ; - Character to print
+global print_char
 print_char:
     push bp         ; save callers bp
     mov bp, sp      ; mv sp into bp
@@ -132,6 +137,7 @@ print_char:
 ; Prints a null-terminated string.
 ; Arguments (top of stack first)
 ; - Address of null-terminated string to print
+global print_string
 print_string:
     push bp
     mov bp, sp
@@ -161,6 +167,7 @@ _print_string_done:
 ; Prints a null-terminated string, followed by a new line and carriage return
 ; Arguments (top of stack first):
 ; - Address of null-terminated string to print
+global print_line
 print_line:
     push bp
     mov bp, sp
@@ -189,6 +196,7 @@ print_line:
 ; Prints a hex number.
 ; Arguments (top of stack first):
 ; - Number to print
+global print_hex_number
 print_hex_number:
     push bp
     mov bp, sp
@@ -226,6 +234,7 @@ _print_hex_number_loop:
     pop bp
     ret
 
+global get_char
 get_char:
     push bp         ; save callers bp
     mov bp, sp      ; mv sp into bp

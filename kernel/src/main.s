@@ -1,6 +1,12 @@
-%include "string.s"
-;%include "forth.s"
+    [BITS 16]
+        
+    extern print_line
+    extern print_string
+    extern print_char
+    extern get_char
+    extern bf_main
 
+    global kmain
 kmain:
     mov dx, hw
     push dx
@@ -53,4 +59,3 @@ logo9: db '=========  =',0
 succ: db 'Success!',0
 fail: db 'Failure!',0
 
-%include "brainfuck.s"
