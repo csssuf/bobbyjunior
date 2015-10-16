@@ -66,6 +66,51 @@ bf_print_pointer:
     pop bp
     ret
 
+; brain fuck: [
+bf_loop_start:
+    push bp
+    mov bp, sp
+    sub sp, 2
+    mov [bp - 2], bx
+
+    mov bx, [bf_pointer]
+
+    cmp byte [bf_array + bx] , 0
+    je .loop_skip
+    jmp .bf_loop_start_ret
+    .loop_skip: ; grab the matching bf_line_pointer for the end of the loop
+        mov bx, [bf_line_pointer]
+        mov ax, [bf_loops + bx]     ; end of loop pointer
+        mov [bf_line_pointer], ax
+    .bf_loop_start_ret:
+        mov bx, [bp - 2]
+        mov sp, bp
+        pop bp
+        ret
+
+; brain fuck: ]
+bf_loop_end:
+    push bp
+    mov bp, sp
+    sub sp, 2
+    mov [bp - 2], bx
+
+    mov bx, [bf_pointer]
+
+    cmp byte [bf_array + bx] , 0
+    je .bf_loop_end_ret
+    .bf_loop_loop:          ; loop de loop!
+        mov bx, [bf_line_pointer]
+        mov ax, [bf_loops + bx]     ; end of loop pointer
+        dec ax                      ; make sure we execute loop start again
+        mov [bf_line_pointer], ax
+    .bf_loop_end_ret:
+        mov bx, [bp - 2]
+        mov sp, bp
+        pop bp
+        ret
+
+
 ; brain fuck: >
 bf_pointer_inc:
     push bp
@@ -198,11 +243,24 @@ bf_grab_line:
 
         mov bx, [bf_line_pointer]       ; bx = *bf_line_pointer
         mov byte [bf_line + bx], al     ; update line buffer
-
-        inc word [bf_line_pointer]           ; bf_line_pointer++
-        cmp word [bf_line_pointer], 76       ; have we reached the end?
-        je .bfgl_end
-        jmp .bfgl_loop
+        cmp al, '['                     ; is this a loop start?
+        je .loop_start
+        cmp al, ']'                     ; is this a loop end?
+        je .loop_end
+        .loop_start:
+            push word [bf_line_pointer]
+            jmp .bfgl_loop_end
+        .loop_end:
+            pop dx
+            mov [bf_loops + bx], dx     ; current bflp -> last loop start
+            xchg bx, dx
+            mov [bf_loops + bx], dx     ; last loop start -> current bflp
+            jmp .bfgl_loop_end
+        .bfgl_loop_end:
+            inc word [bf_line_pointer]           ; bf_line_pointer++
+            cmp word [bf_line_pointer], 76       ; have we reached the end?
+            je .bfgl_end
+            jmp .bfgl_loop
     .bfgl_end:
         mov ax, [bf_line_pointer]
         mov [bf_line_len], ax
@@ -258,10 +316,22 @@ bf_eval:
         cmp dl, '?'
         je .eval_pp
 
+        cmp dl, '['
+        je .eval_ls
+
+        cmp dl, ']'
+        je .eval_le
+
         cmp dl, 0
         je .bf_eval_end
 
         jmp .panic
+        .eval_ls:
+            call bf_loop_start
+            jmp .loop_end
+        .eval_le:
+            call bf_loop_end
+            jmp .loop_end
         .eval_ip:   ; inc pointer
             call bf_pointer_inc
             jmp .loop_end
@@ -337,14 +407,13 @@ bf_eval:
         pop bp
         ret
 
-bf_prompt_str: db 'bf> ',0         ; prompt for input
-bf_line_pointer: dw 0       ; where are we in the bf_line buffer
-bf_line_len:    dw 0        ; how long our line is
-bf_line: times 76 db 0      ; storage for a single line of input
-bf_intro: db 'Welcome to CSH Brain Fuck!', 0
-bf_panic_intro: db '[Panic] Unknown char "', 0
-bf_panic_mid: db '" at ', 0
-bf_array: times 300 db 0  ; our brain fuck array
-bf_pointer: dw 0            ; the brainfuck pointer
-bf_debug_dec: db '<', 0
-bf_debug_inc: db '>', 0
+bf_prompt_str:      db 'bf> ',0         ; prompt for input
+bf_line_pointer:    dw 0                ; where are we in the bf_line buffer
+bf_line_len:        dw 0                ; how long our line is
+bf_line:            times 76 db 0       ; storage for a single line of input
+bf_loops:           times 76 db 0       ; storage for loop bf_line_pointer locs
+bf_intro:           db 'Welcome to CSH Brain Fuck!', 0
+bf_panic_intro:     db '[Panic] Unknown char "', 0
+bf_panic_mid:       db '" at ', 0
+bf_array:           times 300 db 0  ; our brain fuck array
+bf_pointer:         dw 0            ; the brainfuck pointer
