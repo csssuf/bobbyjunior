@@ -1,10 +1,10 @@
-    [BITS 16]
-        
-    extern print_line
-    extern print_string
-    extern print_char
-    extern get_char
-    extern memset
+[BITS 16]
+extern print_line
+extern print_string
+extern print_char
+extern print_hex_number
+extern get_char
+extern memset
 
 global bf_main
 bf_main:
