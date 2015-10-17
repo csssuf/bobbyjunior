@@ -14,10 +14,12 @@ bf_main:
     sub sp, 2
     mov [bp - 2], bx
 
+    ; Print out our intro
     mov dx, bf_intro
     push dx
     call print_line
     add sp, 2
+
     .loop:
         call bf_prompt
         call bf_eval
@@ -34,6 +36,7 @@ bf_prompt:
     push dx
     call print_string   ; print the prompt
     add sp, 2
+
     call bf_grab_line   ; grab 76 characters of brainfuck
 
     mov bx, [bp - 2]
@@ -120,11 +123,18 @@ bf_pointer_inc:
     mov [bp - 2], bx
 
     inc word [bf_pointer]            ; *bf_pointer++
-
-    mov bx, [bp - 2]
-    mov sp, bp
-    pop bp
-    ret
+    cmp word [bf_pointer], 300
+    je .upper_bound
+    mov ax, 0
+    jmp .bf_pointer_inc_ret
+    .upper_bound:
+        mov ax, 1                       ; return value 1, we are out of bounds
+        dec word [bf_pointer]
+    .bf_pointer_inc_ret:
+        mov bx, [bp - 2]
+        mov sp, bp
+        pop bp
+        ret
 
 ; brain fuck: <
 bf_pointer_dec:
@@ -133,12 +143,18 @@ bf_pointer_dec:
     sub sp, 2
     mov [bp - 2], bx
 
+    cmp word [bf_pointer], 0
+    je .lower_bound
     dec word [bf_pointer] ; *bf_pointer--
-
-    mov bx, [bp - 2]
-    mov sp, bp
-    pop bp
-    ret
+    mov ax, 0
+    jmp .bf_pointer_dec_ret
+    .lower_bound:
+        mov ax, 1                       ; return value 1, we are out of bounds
+    .bf_pointer_dec_ret:
+        mov bx, [bp - 2]
+        mov sp, bp
+        pop bp
+        ret
 
 ; brain fuck: +
 bf_byte_inc:
@@ -176,8 +192,6 @@ bf_byte_out:
     mov bp, sp
     sub sp, 2
     mov [bp - 2], bx
-
-    call new_line
 
     mov bx, [bf_pointer]    ; bx = *bf_pointer (the actual pointer)
     mov dl, byte [bf_array + bx]    ; dl = bf_array[bf_pointer]
@@ -233,6 +247,8 @@ bf_grab_line:
 
         cmp al, 0x0D                    ; check if we hit enter
         je .bfgl_end
+        cmp al, 0x08
+        je .bfgl_bs                     ; did we backspace?
 
         mov bx, [bf_line_pointer]       ; bx = *bf_line_pointer
         mov byte [bf_line + bx], al     ; update line buffer
@@ -249,6 +265,8 @@ bf_grab_line:
             xchg bx, dx
             mov [bf_loops + bx], dx     ; last loop start -> current bflp
             jmp .bfgl_loop_end
+        .bfgl_bs:
+            sub word [bf_line_pointer], 2    ; push us back 2 so we can inc again
         .bfgl_loop_end:
             inc word [bf_line_pointer]           ; bf_line_pointer++
             cmp word [bf_line_pointer], 76       ; have we reached the end?
@@ -310,7 +328,7 @@ bf_eval:
         cmp dl, 0
         je .bf_eval_end
 
-        jmp .panic
+        jmp .loop_end
         .eval_ls:
             call bf_loop_start
             jmp .loop_end
@@ -319,10 +337,14 @@ bf_eval:
             jmp .loop_end
         .eval_ip:   ; inc pointer
             call bf_pointer_inc
+            cmp ax, 1
+            je .panic
             jmp .loop_end
 
         .eval_dp:   ; dec pointer
             call bf_pointer_dec
+            cmp ax, 1
+            je .panic
             jmp .loop_end
 
         .eval_ibp:  ; inc byte @ pointer
@@ -344,32 +366,11 @@ bf_eval:
         .eval_pp:
             call bf_print_pointer
             jmp .loop_end
-
         .panic:
-            mov dx, bf_panic_intro
-            push dx
-            call print_string
+            mov ax, bf_panic
+            push ax
+            call print_line
             add sp, 2
-
-            mov bx, [bf_line_pointer]
-            mov dx, [bf_line + bx]
-            push dx
-            call print_char
-            add sp, 2
-
-            mov dx, bf_panic_mid
-            push dx
-            call print_string
-            add sp, 2
-
-            mov dx, [bf_line_pointer]
-            add dx, 48
-            push dx
-            call print_char
-            add sp, 2
-
-            call new_line
-
             jmp .bf_eval_end
         .loop_end:
             inc word [bf_line_pointer]
@@ -410,7 +411,6 @@ bf_line_len:        dw 0                ; how long our line is
 bf_line:            times 76 db 0       ; storage for a single line of input
 bf_loops:           times 76 db 0       ; storage for loop bf_line_pointer locs
 bf_intro:           db 'Welcome to CSH Brain Fuck!', 0
-bf_panic_intro:     db '[Panic] Unknown char "', 0
-bf_panic_mid:       db '" at ', 0
+bf_panic:           db 'Tisk Tisk, you went out of bounds', 0
 bf_array:           times 300 db 0  ; our brain fuck array
 bf_pointer:         dw 0            ; the brainfuck pointer
