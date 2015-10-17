@@ -1,4 +1,5 @@
 [BITS 16]
+cpu 8086
 extern print_line
 extern print_string
 extern print_char
