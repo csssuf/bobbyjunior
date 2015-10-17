@@ -6,6 +6,7 @@ extern print_hex_number
 extern get_char
 extern memset
 
+
 global bf_main
 bf_main:
     push bp
@@ -176,15 +177,7 @@ bf_byte_out:
     sub sp, 2
     mov [bp - 2], bx
 
-    mov ax, 0xD
-    push ax
-    call print_char
-    add sp, 2
-
-    mov ax, 0xA
-    push ax
-    call print_char
-    add sp, 2
+    call new_line
 
     mov bx, [bf_pointer]    ; bx = *bf_pointer (the actual pointer)
     mov dl, byte [bf_array + bx]    ; dl = bf_array[bf_pointer]
@@ -264,14 +257,6 @@ bf_grab_line:
     .bfgl_end:
         mov ax, [bf_line_pointer]
         mov [bf_line_len], ax
-        mov ax, 0xD
-        push ax
-        call print_char
-        add sp, 2
-
-        mov ax, 0xA
-        push ax
-        call print_char
 
         mov bx, [bp - 2]
         mov sp, bp
@@ -383,16 +368,7 @@ bf_eval:
             call print_char
             add sp, 2
 
-            mov ax, 0xD
-            push ax
-            call print_char
-            add sp, 2
-
-            mov ax, 0xA
-            push ax
-            call print_char
-            add sp, 2
-
+            call new_line
 
             jmp .bf_eval_end
         .loop_end:
@@ -402,10 +378,31 @@ bf_eval:
             je .bf_eval_end
             jmp .loop
     .bf_eval_end:
+        call new_line
         mov bx, [bp - 2]
         mov sp, bp
         pop bp
         ret
+
+new_line:
+    push bp
+    mov bp, sp
+    sub sp, 2
+    mov [bp - 2], bx
+
+    mov ax, 0xD
+    push ax
+    call print_char
+    add sp, 2
+
+    mov ax, 0xA
+    push ax
+    call print_char
+
+    mov bx, [bp - 2]
+    mov sp, bp
+    pop bp
+    ret
 
 bf_prompt_str:      db 'bf> ',0         ; prompt for input
 bf_line_pointer:    dw 0                ; where are we in the bf_line buffer
