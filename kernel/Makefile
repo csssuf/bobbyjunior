@@ -4,7 +4,7 @@ OUTS := $(patsubst src/%.s,bin/%.o,$(SRCS))
 bin/mbr.bin: bin/mbr.elf
 	objcopy -S -O binary bin/mbr.elf bin/mbr.bin
 
-bin/mbr.elf: $(OUTS)
+bin/mbr.elf: $(OUTS) src/mbr.ld
 	ld -T src/mbr.ld -m elf_i386 $(OUTS) -o bin/mbr.elf
 
 bin/%.o: src/%.s

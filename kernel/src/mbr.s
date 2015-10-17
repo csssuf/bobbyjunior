@@ -1,4 +1,5 @@
 [BITS   16]
+cpu 8086
     extern kmain
 
 global boot
@@ -26,7 +27,8 @@ read_drive:
     int 0x13
     jc read_drive ; if failure, try again
 
-    jmp kmain
+    mov ax, kmain
+    jmp ax
 
 times 510-($-$$) db 0
 db 0x55

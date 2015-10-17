@@ -1,10 +1,12 @@
     [BITS 16]
+    cpu 8086
         
     extern print_line
     extern print_string
     extern print_char
     extern get_char
     extern bf_main
+    extern memcpy1
 
     global kmain
 kmain:
@@ -12,6 +14,12 @@ kmain:
     push dx
     call print_line
 
+    ;; push 13
+    ;; push logo1
+    ;; push 0x9000
+    ;; call memcpy1
+    ;; sub sp, 6
+    
     mov dx, logo1
     push dx
     call print_line
