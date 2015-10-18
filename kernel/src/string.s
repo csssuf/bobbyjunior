@@ -1,4 +1,5 @@
     [BITS 16]
+    cpu 8086
 ; compare two strings up to len
 ; strncmp(addr str1, addr str2, len)
 global strncmp
@@ -76,41 +77,27 @@ memset:
     ret
 
 ; Copy one location in memory to another
-; memcpy(int16 src, int16 dest, int16 len)
+; memcpy(int16 dest, int16 src, int16 len)
 global memcpy
 memcpy:
     push bp
-    sub sp, 4
-    mov ax, [bp + 4]    ; src address
-    mov cx, [bp + 6]    ; dest address
-    mov dx, [bp + 8]    ; len
+    mov bp, sp
+    push si
+    push di
+    
+    mov cx, [bp + 6]
+    mov si, [bp + 4]
+    mov di, [bp + 2]
+    
+    .loop:
+    movsb
+    loop .loop
 
-    mov word [bp-2], bx ; store bx for later
-    mov bx, ax          ; move src into bx
-
-    sub dx, 1
-    mov word [bp-4], dx ; put len here so we can reuse dx
-    .memcpy_loop:
-        add bx, word [bp-4]
-        mov dx, [bx]    ; load src word from memory into dx
-
-        mov bx, cx      ; get the dest addr into bx
-        add bx, word [bp-4]
-
-        mov [bx], dx    ; copy
-
-        sub word [bp-4], 1  ; sub 1 from our counter
-
-        clc
-        cmp word [bp-4], 0
-        jge .memcpy_loop
-    mov bx, word [bp-2]
+    pop di
+    pop si
     mov sp, bp
     pop bp
     ret
-
-    pop bx
-    sub sp, 4
 
 ; Prints a single character.
 ; Arguments: (top of stack first)
