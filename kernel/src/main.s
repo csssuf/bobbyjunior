@@ -7,6 +7,7 @@
     extern get_char
     extern bf_main
     extern memcpy1
+    extern forth_main
 
     global kmain
 kmain:
@@ -51,7 +52,7 @@ kmain:
     add sp, 2
 
     .bf_entry:
-        call bf_main
+        call forth_main
         jmp $
 
 hw: db 'Kernel loaded.',0
