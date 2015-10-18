@@ -6,13 +6,25 @@ extern print_hex_number
 extern get_char
 extern memset
 
-
-global bf_main
-bf_main:
+; fpre takes a local var size and creates the prelude to a function
+%macro fpre 1
     push bp
     mov bp, sp
     sub sp, 2
     mov [bp - 2], bx
+%endmacro
+
+; fpost turns the end of function postfix into a macro
+%macro fpost 0
+    mov bx, [bp - 2]
+    mov sp, bp
+    pop bp
+    ret
+%endmacro
+
+global bf_main
+bf_main:
+    fpre 2
 
     ; Print out our intro
     mov dx, bf_intro
@@ -27,10 +39,7 @@ bf_main:
 
 ; Prompt the user for a line of brainfuck
 bf_prompt:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     mov dx, bf_prompt_str
     push dx
@@ -39,43 +48,23 @@ bf_prompt:
 
     call bf_grab_line   ; grab 76 characters of brainfuck
 
-    mov bx, [bp - 2]
-    mov sp, bp
-    pop bp
-    ret
+    fpost
 
 bf_print_pointer:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     mov bx, word [bf_pointer]  ; bx = bf_pointer
     push word bx            ; &bf_pointer++
     call print_hex_number
     add sp, 2
 
-    mov ax, 0xD
-    push ax
-    call print_char
-    add sp, 2
+    call new_line
 
-    mov ax, 0xA
-    push ax
-    call print_char
-    add sp, 2
-
-    mov bx, [bp - 2]
-    mov sp, bp
-    pop bp
-    ret
+    fpost
 
 ; brain fuck: [
 bf_loop_start:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     mov bx, [bf_pointer]
 
@@ -87,17 +76,11 @@ bf_loop_start:
         mov ax, [bf_loops + bx]     ; end of loop pointer
         mov [bf_line_pointer], ax
     .bf_loop_start_ret:
-        mov bx, [bp - 2]
-        mov sp, bp
-        pop bp
-        ret
+        fpost
 
 ; brain fuck: ]
 bf_loop_end:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     mov bx, [bf_pointer]
 
@@ -109,18 +92,11 @@ bf_loop_end:
         dec ax                      ; make sure we execute loop start again
         mov [bf_line_pointer], ax
     .bf_loop_end_ret:
-        mov bx, [bp - 2]
-        mov sp, bp
-        pop bp
-        ret
-
+        fpost
 
 ; brain fuck: >
 bf_pointer_inc:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     inc word [bf_pointer]            ; *bf_pointer++
     cmp word [bf_pointer], 300
@@ -131,17 +107,11 @@ bf_pointer_inc:
         mov ax, 1                       ; return value 1, we are out of bounds
         dec word [bf_pointer]
     .bf_pointer_inc_ret:
-        mov bx, [bp - 2]
-        mov sp, bp
-        pop bp
-        ret
+        fpost
 
 ; brain fuck: <
 bf_pointer_dec:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     cmp word [bf_pointer], 0
     je .lower_bound
@@ -151,47 +121,29 @@ bf_pointer_dec:
     .lower_bound:
         mov ax, 1                       ; return value 1, we are out of bounds
     .bf_pointer_dec_ret:
-        mov bx, [bp - 2]
-        mov sp, bp
-        pop bp
-        ret
+        fpost
 
 ; brain fuck: +
 bf_byte_inc:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     mov bx, [bf_pointer]    ; bx = *bf_pointer (the actual pointer)
     inc byte [bf_array + bx]
 
-    mov bx, [bp - 2]
-    mov sp, bp
-    pop bp
-    ret
+    fpost
 
 ; brain fuck: -
 bf_byte_dec:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     mov bx, [bf_pointer]    ; bx = *bf_pointer (the actual pointer)
     dec byte [bf_array + bx]
 
-    mov bx, [bp - 2]
-    mov sp, bp
-    pop bp
-    ret
+    fpost
 
 ; brain fuck: .
 bf_byte_out:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     mov bx, [bf_pointer]    ; bx = *bf_pointer (the actual pointer)
     mov dl, byte [bf_array + bx]    ; dl = bf_array[bf_pointer]
@@ -199,33 +151,21 @@ bf_byte_out:
     call print_char
     add sp, 2
 
-    mov bx, [bp - 2]
-    mov sp, bp
-    pop bp
-    ret
+    fpost
 
 ; brain fuck: ,
 bf_byte_in:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     call get_char           ; al = <user input>
     mov bx, [bf_pointer]    ; bx = *bf_pointer (the actual pointer)
     mov byte [bf_array + bx], al
 
-    mov bx, [bp - 2]
-    mov sp, bp
-    pop bp
-    ret
+    fpost
 
 ; Grab a line's worth of brainfuck program
 bf_grab_line:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     ; reset bf_line_pointer to 0
     mov word [bf_line_pointer], 0
@@ -276,18 +216,12 @@ bf_grab_line:
         mov ax, [bf_line_pointer]
         mov [bf_line_len], ax
 
-        mov bx, [bp - 2]
-        mov sp, bp
-        pop bp
-        ret
+        fpost
 
 
 ; evalulate Brain fuck in bf_line
 bf_eval:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     ; reset bf_line_pointer to 0
     mov word [bf_line_pointer], 0
@@ -380,16 +314,10 @@ bf_eval:
             jmp .loop
     .bf_eval_end:
         call new_line
-        mov bx, [bp - 2]
-        mov sp, bp
-        pop bp
-        ret
+        fpost
 
 new_line:
-    push bp
-    mov bp, sp
-    sub sp, 2
-    mov [bp - 2], bx
+    fpre 2
 
     mov ax, 0xD
     push ax
@@ -400,10 +328,7 @@ new_line:
     push ax
     call print_char
 
-    mov bx, [bp - 2]
-    mov sp, bp
-    pop bp
-    ret
+    fpost
 
 bf_prompt_str:      db 'bf> ',0         ; prompt for input
 bf_line_pointer:    dw 0                ; where are we in the bf_line buffer
