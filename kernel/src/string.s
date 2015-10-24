@@ -55,23 +55,20 @@ memset:
     push bp
     mov bp, sp
     sub sp, 4
-    mov word [bp-2], bx ; save bx into a local var
+    mov word [bp - 2], bx ; save bx into a local var
+    mov word [bp - 4], di ; save bi
 
     ; grab out args
-    mov bx, [bp + 4]    ; address
-    mov cx, [bp + 6]    ; CL = character
-    mov dx, [bp + 8]    ; len
-    mov ax, 0           ; n (the counter)
+    mov di, [bp + 4]    ; address
+    mov ax, [bp + 6]    ; AL = character
+    mov cx, [bp + 8]    ; len
 
-    .memset_loop:
-        mov bx, [bp+4]
-        add bx, ax
-        mov byte [bx], cl ; mem[n] = char
-        inc ax
-        cmp ax, dx
-        jne .memset_loop
+    .loop:
+        stosb
+        loop .loop
 
-    mov bx, word [bp-2]
+    mov bx, word [bp - 2]
+    mov di, word [bp - 4]
     mov sp, bp
     pop bp
     ret
@@ -84,11 +81,11 @@ memcpy:
     mov bp, sp
     push si
     push di
-    
+
     mov cx, [bp + 6]
     mov si, [bp + 4]
     mov di, [bp + 2]
-    
+
     .loop:
     movsb
     loop .loop
@@ -132,7 +129,7 @@ print_string:
 
     mov word [bp - 2], bx
     mov bx, word [bp + 4]
-    
+
 _print_string_loop:
     mov byte al, [bx]
     cmp al, 0
