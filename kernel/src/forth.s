@@ -5,6 +5,7 @@
     extern print_hex_number
     extern print_string
     extern print_char
+    extern forth_program
         ; forth regs
         ; ax: top of stack
         ; bx: instruction pointer
@@ -19,7 +20,7 @@ thischar:       db 0
 global forth_main
 forth_main:
     mov ax, 0
-    mov bx, program
+    mov bx, forth_program
     mov si, dstack
     call forth_cycle
 
@@ -118,7 +119,7 @@ f_call:
     jmp forth_cycle
     
 f_jmp:
-    add mov bx, [bx]
+    mov bx, [bx]
     jmp forth_cycle
     
 f_0branch:
@@ -163,14 +164,3 @@ halt:   jmp halt
 panic:
     push ax
     call print_string
-
-program:
-    db 14
-    dw 25
-
-    db 14
-    dw 2
-
-    db 2
-    db 15
-    db 16
