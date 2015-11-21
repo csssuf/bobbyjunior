@@ -108,10 +108,12 @@ print_char:
     mov ax, word [bp+4]  ; move first arg into ax
     mov word [bp-2], bx  ; store bx in a local stack var
 
+    push bp
     mov ah, 0x0e
     mov bl, 0x07
     mov bh, 0x00
     int 0x10
+    pop bp
 
     mov bx, word [bp-2]
     mov sp, bp
