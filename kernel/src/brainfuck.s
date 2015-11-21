@@ -340,7 +340,7 @@ bf_line_pointer:    dw 0                ; where are we in the bf_line buffer
 bf_line_len:        dw 0                ; how long our line is
 bf_line:            times 76 db 0       ; storage for a single line of input
 bf_loops:           times 76 db 0       ; storage for loop bf_line_pointer locs
-bf_intro:           db 'Welcome to CSH Brain Fuck!', 0
+bf_intro:           db 'Welcome to CSH BF!', 0
 bf_panic:           db 'Tisk Tisk, you went out of bounds', 0
 bf_array:           times 300 db 0  ; our brain fuck array
 bf_pointer:         dw 0            ; the brainfuck pointer
