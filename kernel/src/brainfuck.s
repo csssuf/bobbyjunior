@@ -63,7 +63,8 @@ endfn
 ; Extension to print value at pointer as hex
 defn bf_print_value, 2
     mov bx, word [bf_pointer]
-    mov ax, [bf_array + bx]
+    mov al, byte [bf_array + bx]
+    mov ah, byte 0
     push ax
     call print_hex_number
     add sp, 2
@@ -297,6 +298,7 @@ defn bf_eval, 2
             call bf_print_pointer
             jmp .loop_end
         .panic:
+            call new_line
             mov ax, bf_panic
             push ax
             call print_line
