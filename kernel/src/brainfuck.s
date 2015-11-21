@@ -190,11 +190,12 @@ defn bf_grab_line, 2
         je .loop_start
         cmp al, ']'                     ; is this a loop end?
         je .loop_end
+        jmp .bfgl_loop_end
         .loop_start:
-            push word [bf_line_pointer]
+            push word bx                ; push the current line pointer value
             jmp .bfgl_loop_end
         .loop_end:
-            pop dx
+            pop dx                      ; get the value of the last loop start
             mov [bf_loops + bx], dx     ; current bflp -> last loop start
             xchg bx, dx
             mov [bf_loops + bx], dx     ; last loop start -> current bflp
