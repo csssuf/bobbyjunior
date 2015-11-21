@@ -207,6 +207,12 @@ defn bf_grab_line, 2
             je .bfgl_end
             jmp .bfgl_loop
     .bfgl_end:
+        push ax
+        mov ax, 0x0A
+        push ax
+        call print_char
+        pop ax
+        pop ax
         mov ax, [bf_line_pointer]
         mov [bf_line_len], ax
 endfn

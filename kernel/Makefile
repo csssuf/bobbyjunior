@@ -14,7 +14,8 @@ src/forth_prog.s: src/prog.fs forthc/*.hs
 	set -o pipefail ; \
 	runhaskell forthc/ForthC.hs < src/prog.fs \
 		| runhaskell forthc/ToAsm.hs forth_program \
-		> src/forth_prog.s
+		> src/forth_prog.s \
+	|| rm src/forth_prog.s
 
 .PHONY: clean
 clean:
