@@ -6,6 +6,7 @@ cpu 8086
     %1:
     push bp
     mov bp, sp
+    sub sp, 2
     sub sp, %2
     mov [bp - 2], bx
 %endmacro
@@ -53,3 +54,69 @@ defn array_end, 2
     add ax, 1        ; len += 1
     mul word [bx]     ; ax = size * len
 endfn
+
+; bitmap_init(u16 addr, u16 entries)
+; bitmap_init([bp + 4], [bp + 6])
+; Create a bitmap and set all bits to 0
+global bitmap_init
+defn bitmap_init, 2
+    mov word [bp - 4], di ; save di
+    mov di, [bp + 4] ; di = addr
+    mov cx, [bp + 6] ; cx = entries
+    mov ax, 8        ; 8 bits == 1 byte
+    div cx           ; entires / 8 bits = num bytes
+    mov cx, ax       ; cx is our counter
+    mov ax, 0        ; we want to store 0
+    .loop:
+        stosb
+        loop .loop
+    mov di, word [bp-4]
+endfn
+
+; bitmap_set(u16 addr, u16 index)
+; bitmap_set([bp + 4], [bp + 6])
+global bitmap_set
+defn bitmap_set, 2
+    mov bx, [bp + 4]
+    mov ax, 8           ; ax = CHAR_BITS
+    div word [bp + 6]   ; index / CHAR_BITS
+    mov cx, ax          ; ax = array index, dx = bit index
+    ; calculate address
+    add ax, bx          ; ax = addr + index
+    mov bx, ax          ; put our new absolute addr into bx
+    ; bitmap[index] l|= (1 << n)
+    shl 1, dx
+    or byte [bx], cl
+endfn
+
+; bitmap_get(u16 addr, u16 index) -> bool
+; bitmap_get([bp + 4], [bp + 6])  -> al
+global bitmap_get
+defn bitmap_get, 2
+    mov bx, [bp + 4]
+    mov ax, 8           ; ax = CHAR_BITS
+    div word [bp + 6]   ; index / CHAR_BITS
+    mov cx, ax          ; ax = array index, dx = bit index
+    ; calculate address
+    add ax, bx          ; ax = addr + index
+    mov bx, ax          ; put our new absolute addr into bx
+    ; al = bitmap[index] & (1 << n)
+    shl 1, dx
+    mov al, byte [bx]
+    or al, cl
+endfn
+
+
+; slab_init(u16 addr, u16 length, u16 csize)
+; slab_init([bp + 4], [bp + 6], [bp + 8])
+; Given a memory address initialize all the metadata to handle the slab.
+global slab_init
+defn slab_init, 2
+    mov bx, [bp + 4]
+    mov ax, [bp + 6]
+    mov [bx+2], ax  ; addr+2 = length
+    mov ax, [bp + 8]
+    mov [bx+4], ax  ; addr+4 = csize
+    mov cx, [bp + 6]
+    div cx
+    mov [bx+6], ax  ; addr+6 = nchunks
