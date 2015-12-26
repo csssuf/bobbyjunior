@@ -77,33 +77,35 @@ endfn
 ; bitmap_set([bp + 4], [bp + 6])
 global bitmap_set
 defn bitmap_set, 2
-    mov bx, [bp + 4]
-    mov ax, 8           ; ax = CHAR_BITS
+    mov al, 8           ; al = CHAR_BITS
+    ; al=quotient, ah=remainder
     div word [bp + 6]   ; index / CHAR_BITS
-    mov cx, ax          ; ax = array index, dx = bit index
+    mov cl, ah     ; store the byte offset in cl for shl later
     ; calculate address
-    add ax, bx          ; ax = addr + index
+    add [bp + 4], al          ; ax = addr + index
     mov bx, ax          ; put our new absolute addr into bx
     ; bitmap[index] l|= (1 << n)
-    shl 1, dx
-    or byte [bx], cl
+    mov dl, 1
+    shl dl, cl              ; dl = (1 << n[cl])
+    or byte [bx], dl
 endfn
 
 ; bitmap_get(u16 addr, u16 index) -> bool
 ; bitmap_get([bp + 4], [bp + 6])  -> al
 global bitmap_get
 defn bitmap_get, 2
-    mov bx, [bp + 4]
-    mov ax, 8           ; ax = CHAR_BITS
+    mov al, 8           ; al = CHAR_BITS
+    ; al=quotient, ah=remainder
     div word [bp + 6]   ; index / CHAR_BITS
-    mov cx, ax          ; ax = array index, dx = bit index
+    mov cl, ah     ; store the byte offset in cl for shl later
     ; calculate address
-    add ax, bx          ; ax = addr + index
+    add [bp + 4], al          ; ax = addr + index
     mov bx, ax          ; put our new absolute addr into bx
     ; al = bitmap[index] & (1 << n)
-    shl 1, dx
+    mov dl, 1
+    shl dl, cl              ; dl = (1 << n[cl])
     mov al, byte [bx]
-    or al, cl
+    or al, dl
 endfn
 
 
