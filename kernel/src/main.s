@@ -7,13 +7,17 @@
     extern get_char
     extern bf_main
     extern memcpy1
-    extern forth_main
+    ;extern forth_main
+    extern init_syscall
 
     global kmain
 kmain:
     mov dx, hw
     push dx
     call print_line
+
+    ; First things first!
+    call init_syscall
 
     ;; push 13
     ;; push logo1
@@ -52,10 +56,12 @@ kmain:
     add sp, 2
 
     .bf_entry:
-        call forth_main
+        mov ah, 1
+        int 0x60
+        ;call forth_main
         jmp $
 
-hw: db 'Kernel loaded.',0
+hw: db 'Kernel loaded. Initializing syscalls.',0
 logo1: db '=========  =',0
 logo2: db '=       =  =',0
 logo3: db '= =====    =',0
