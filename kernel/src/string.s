@@ -63,9 +63,7 @@ memset:
     mov ax, [bp + 6]    ; AL = character
     mov cx, [bp + 8]    ; len
 
-    .loop:
-        stosb
-        loop .loop
+    rep stosb
 
     mov bx, word [bp - 2]
     mov di, word [bp - 4]
@@ -86,9 +84,7 @@ memcpy:
     mov si, [bp + 4]
     mov di, [bp + 2]
 
-    .loop:
-    movsb
-    loop .loop
+    rep movsb
 
     pop di
     pop si
@@ -158,7 +154,7 @@ print_line:
     push bp
     mov bp, sp
     sub sp, 4
-    
+
     mov ax, word [bp + 4]
 
     push ax

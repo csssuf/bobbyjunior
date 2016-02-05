@@ -28,8 +28,8 @@ global bf_main
 
 defn bf_main, 2
     ; Print out our intro
-    mov dx, bf_intro
-    push dx
+    mov ax, bf_intro
+    push ax
     call print_line
     add sp, 2
     .loop:
@@ -41,8 +41,8 @@ endfn
 
 ; Prompt the user for a line of brainfuck
 defn bf_prompt, 2
-    mov dx, bf_prompt_str
-    push dx
+    mov ax, bf_prompt_str
+    push ax
     call print_string   ; print the prompt
     add sp, 2
 
@@ -51,11 +51,10 @@ endfn
 
 ; Extension to print the current pointer as hex
 defn bf_print_pointer, 2
-    mov bx, word [bf_pointer]  ; bx = bf_pointer
-    push word bx            ; &bf_pointer++
+    mov ax, word [bf_pointer]  ; bx = bf_pointer
+    push word ax            ; &bf_pointer++
     call print_hex_number
     add sp, 2
-
     call new_line
 endfn
 
@@ -105,7 +104,7 @@ defn bf_pointer_inc, 2
     inc word [bf_pointer]            ; *bf_pointer++
     cmp word [bf_pointer], 300
     je .upper_bound
-    mov ax, 0
+    xor ax, ax
     jmp .bf_pointer_inc_ret
     .upper_bound:
         mov ax, 1                       ; return value 1, we are out of bounds
@@ -119,7 +118,7 @@ defn bf_pointer_dec, 2
     cmp word [bf_pointer], 0
     je .lower_bound
     dec word [bf_pointer] ; *bf_pointer--
-    mov ax, 0
+    xor ax, ax
     jmp .bf_pointer_dec_ret
     .lower_bound:
         mov ax, 1                       ; return value 1, we are out of bounds
@@ -144,8 +143,9 @@ endfn
 ; brain fuck output: .
 defn bf_byte_out, 2
     mov bx, [bf_pointer]    ; bx = *bf_pointer (the actual pointer)
-    mov dl, byte [bf_array + bx]    ; dl = bf_array[bf_pointer]
-    push dx
+    xor ax, ax
+    mov al, byte [bf_array + bx]    ; dl = bf_array[bf_pointer]
+    push ax
     call print_char
     add sp, 2
 endfn
@@ -164,12 +164,12 @@ defn bf_grab_line, 2
     ; reset bf_line_pointer to 0
     mov word [bf_line_pointer], 0
     ;call memset to reset our line memory
-    mov dx, 76
-    push dx         ; len=76
-    mov dl, 0
-    push dx         ; char=\0
-    mov dx, bf_line
-    push dx         ; addr=bf_line
+    mov ax, 76
+    push ax         ; len=76
+    mov al, 0
+    push ax         ; char=\0
+    mov ax, bf_line
+    push ax         ; addr=bf_line
     call memset
     sub sp, 6
 
@@ -188,9 +188,11 @@ defn bf_grab_line, 2
         mov byte [bf_line + bx], al     ; update line buffer
         cmp al, '['                     ; is this a loop start?
         je .loop_start
+
         cmp al, ']'                     ; is this a loop end?
         je .loop_end
         jmp .bfgl_loop_end
+
         .loop_start:
             push word bx                ; push the current line pointer value
             jmp .bfgl_loop_end
@@ -228,39 +230,39 @@ defn bf_eval, 2
 
     .loop:
         mov bx, word [bf_line_pointer]
-        mov dl, byte [bf_line + bx] ; dx = bf_line[n]
+        mov al, byte [bf_line + bx] ; dx = bf_line[n]
 
-        cmp dl, '>'
+        cmp al, '>'
         je .eval_ip
 
-        cmp dl, '<'
+        cmp al, '<'
         je .eval_dp
 
-        cmp dl, '+'
+        cmp al, '+'
         je .eval_ibp
 
-        cmp dl, '-'
+        cmp al, '-'
         je .eval_dbp
 
-        cmp dl, '.'
+        cmp al, '.'
         je .eval_otbp
 
-        cmp dl, ','
+        cmp al, ','
         je .eval_inbp
 
-        cmp dl, '?'
+        cmp al, '?'
         je .eval_pp
 
-        cmp dl, '#'
+        cmp al, '#'
         je .eval_pv
 
-        cmp dl, '['
+        cmp al, '['
         je .eval_ls
 
-        cmp dl, ']'
+        cmp al, ']'
         je .eval_le
 
-        cmp dl, 0
+        cmp al, 0
         je .bf_eval_end
 
         jmp .loop_end
