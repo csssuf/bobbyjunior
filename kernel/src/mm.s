@@ -35,9 +35,7 @@ defn bitmap_init, 2
     mov cx, ax            ; cx is our counter
     xor ax, ax            ; we want to store 0, so clear ax
     cld                   ; clear direction flag
-    .loop:
-        stosb
-        loop .loop
+    rep stosb
     mov di, word [bp - 4]
 endfn
 
