@@ -15,6 +15,7 @@ _syscall_inthandler:
     mov dx, _syscall_one_data
     push dx
     call print_line ; and fall through to syscall_zero
+    add sp, 2
 
 .syscall_zero:
     iret
