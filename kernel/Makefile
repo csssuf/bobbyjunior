@@ -1,4 +1,4 @@
-SRCS := src/mbr.s src/brainfuck.s src/forth.s src/main.s src/string.s src/forth_prog.s
+SRCS := src/mbr.s src/brainfuck.s src/main.s src/string.s src/syscall.s
 OUTS := $(patsubst src/%.s,bin/%.o,$(SRCS))
 
 bin/mbr.bin: bin/mbr.elf

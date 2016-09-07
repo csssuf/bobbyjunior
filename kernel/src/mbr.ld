@@ -12,6 +12,5 @@ SECTIONS
            bin/main.o
            bin/string.o
            bin/brainfuck.o
-           bin/forth.o  
     }
 }
