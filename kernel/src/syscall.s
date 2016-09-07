@@ -5,6 +5,7 @@
 
 ; Handler for the syscall interrupt (0x60).
 _syscall_inthandler:
+    cli
     cmp ah, 0 ; Null syscall
     je  .syscall_zero
 
